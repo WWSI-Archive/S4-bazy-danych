@@ -54,3 +54,35 @@ ALTER TABLE KD.Osoby
 
 ALTER TABLE KD.Osoby
     ADD Wiek AS date diff( YEAR, DataUrodzenia, getdate());
+
+SELECT DISTINCT
+    getdate(),
+    SYSTEM_USER,
+    HOST_NAME(),
+    'Dzień Dobry!' tekst
+FROM Lekarze;
+
+SELECT
+    L.Nazwisko,
+    l.Imie,
+    year(L.DataUrodzenia)                       AS Rocznik,
+    IIF(CzyKobieta = 1, 'Kobieta', 'Mężczyzna') AS Płeć
+FROM Lekarze AS L
+WHERE L.IdLekarza < 24
+      AND year(L.DataUrodzenia) > 1976
+ORDER BY Rocznik DESC;
+
+
+
+--Zapytania proste
+
+SELECT P.Nazwisko as Pacjent, L.Nazwisko AS Lekarz, W.Oplata
+FROM Wizyty AS W
+    JOIN Lekarze AS L ON L.idLekarza = W.idLekarza
+    JOIN Pacjenci AS P ON W.IdPacjenta = P.IdPacjenta
+WHERE DataWizyty = '20140712'
+      AND L.CzyKobieta = 1
+      AND year(P.DataUrodzenia) > 1990
+
+
+-- Za 2 tygodnie - funkcje agregujące

@@ -1,0 +1,118 @@
+USE ABDPrzychodnia;
+
+-- Zadanie 1 – Zadanie wagi lekkiej
+-- W bazie danych ABDPrzychodnia, zrobić zestawienie wizyt z 22.04.2012, w których brali udział pacjenci urodzeni po
+-- roku  1987  a lekarz był kobietą. W zestawieniu powinny się znajdować następujące dane:  nazwisko i imię pacjenta,
+-- numer ewidencyjny lekarza oraz kwota opłaty za wizytę.
+-- Wynik uporządkować według nazwiska pacjenta malejąco.
+
+SELECT
+    P.Nazwisko,
+    P.Imie,
+    W.Oplata,
+    L.NrEwid AS [Numer Ewidencyjny]
+FROM Wizyty AS W
+    JOIN Lekarze AS L ON L.idLekarza = W.idLekarza
+    JOIN Pacjenci AS P ON W.IdPacjenta = P.IdPacjenta
+WHERE L.CzyKobieta = 1
+      AND YEAR(P.DataUrodzenia) > 1987
+      AND DataWizyty = '20120422'
+ORDER BY P.Nazwisko DESC;
+
+-- Zadanie 2 – Zadanie wagi lekkiej
+-- W bazie danych ABDPrzychodnia napisać zapytanie zwracające następujące dane: nazwisko, imię, pesel i płeć tych
+-- pacjentów, którzy w pierwszym półroczu 2013 byli w diabetologa i chirurga.
+
+SELECT
+    Nazwisko,
+    Imie,
+    Pesel,
+    IIF(CzyKobieta = 1, 'Kobieta', 'Mężczyzna') [Płeć]
+FROM Pacjenci AS P
+WHERE
+    EXISTS(
+        SELECT *
+        FROM Wizyty W
+            JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
+            JOIN Specjalizacje S ON L.Idspecjalizacji = S.idspecjalizacji
+        WHERE
+            YEAR(W.DataWizyty) = 2013 AND
+            MONTH(W.DataWizyty) <= 6 AND
+            P.IdPacjenta = W.IdPacjenta AND
+            S.NazwaSpecjalizacji = 'Chirurg'
+    )
+    AND EXISTS(
+        SELECT *
+        FROM Wizyty W
+            JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
+            JOIN Specjalizacje S ON L.Idspecjalizacji = S.idspecjalizacji
+        WHERE
+            YEAR(W.DataWizyty) = 2013 AND
+            MONTH(W.DataWizyty) <= 6 AND
+            P.IdPacjenta = W.IdPacjenta AND
+            S.NazwaSpecjalizacji = 'Diabetolog'
+    );
+
+-- Zadanie 3 – Zadanie wagi lekkiej
+-- W bazie danych ABDPrzychodnia napisać zapytanie zwracające następujące dane: nazwisko i imię lekarza, nazwisko i
+-- imię pacjenta, datę wizyty i kwotę opłaty za wizytę dla wizyt  z marca 2012  w których lekarz był tej samej płci
+-- co pacjent i był od niego straszy.
+-- Wynik uporządkować według  daty wizyty rosnąco.
+
+SELECT
+    L.Nazwisko [Nazwisko Lekarza],
+    L.Imie     [Imię Lekarza],
+    P.Nazwisko [Nazwisko Pacjenta],
+    P.Imie     [Imię Pacjenta],
+    DataWizyty [Data Wizyty],
+    Oplata
+FROM Wizyty W
+    JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
+    JOIN Pacjenci P ON W.IdPacjenta = P.IdPacjenta
+WHERE L.CzyKobieta = P.CzyKobieta
+      AND L.DataUrodzenia < P.DataUrodzenia
+      AND YEAR(DataWizyty) = 2012
+      AND MONTH(DataWizyty) = 3
+ORDER BY DataWizyty ASC;
+
+-- Super Bonus Wagi Ciężkiej
+
+ALTER TABLE KD.Osoby
+    DROP CONSTRAINT PeselOk;
+
+ALTER TABLE KD.Osoby
+    ADD CONSTRAINT PeselOk CHECK
+(
+    Pesel LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
+
+    AND
+    (
+        substring(Pesel, 3, 1) < 2
+        AND
+        DataUrodzenia = CONCAT('19', substring(Pesel, 1, 6))
+
+        OR
+
+        substring(Pesel, 3, 1) >= 2
+        AND
+        DataUrodzenia = CONCAT('20', substring(Pesel, 1, 2), (substring(Pesel, 3, 1) - 2), substring(Pesel, 4, 3))
+    )
+
+    AND SUBSTRING(Pesel, 10, 1) % 2 = IIF(CzyKobieta = 1, 0, 1)
+
+    AND
+    (
+        (
+            (9 * substring(Pesel, 1, 1))
+            + (7 * substring(Pesel, 2, 1))
+            + (3 * substring(Pesel, 3, 1))
+            + (1 * substring(Pesel, 4, 1))
+            + (9 * substring(Pesel, 5, 1))
+            + (7 * substring(Pesel, 6, 1))
+            + (3 * substring(Pesel, 7, 1))
+            + (1 * substring(Pesel, 8, 1))
+            + (9 * substring(Pesel, 9, 1))
+            + (7 * substring(Pesel, 10, 1))
+        ) % 10
+    ) = substring(Pesel, 11, 1)
+);
