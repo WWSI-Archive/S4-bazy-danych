@@ -1,0 +1,109 @@
+-- Zadanie 1 – Zadanie wagi lekkiej
+-- W bazie danych ABDPrzychodnia przygotować zestawienie zawierające następujące dane;
+-- nazwisko, imię  i Pesel pacjenta oraz liczbę  wizyt danego pacjenta w II półroczu 2013.
+-- W wyniku uwzględnić tylko tych pacjentów, którzy byli przynajmniej 5 razy u lekarza.
+-- Wynik zapytania uporządkować malejąco według ilości wizyt
+
+USE ABDPrzychodnia;
+
+SELECT
+  Nazwisko,
+  Imie,
+  Pesel,
+  COUNT(*) Wizyty
+FROM Pacjenci AS P
+  JOIN Wizyty W ON P.IdPacjenta = W.IdPacjenta
+WHERE
+  YEAR(W.DataWizyty) = 2013 AND
+  MONTH(W.DataWizyty) >= 7
+GROUP BY Nazwisko, Imie, Pesel
+HAVING COUNT(*) >= 5
+ORDER BY COUNT(*) DESC
+
+
+-- Zadanie 2 – Zadanie wagi lekkiej
+-- W bazie danych ABDUczelnia przygotować zestawienie zawierające następujące dane;
+-- nazwę przedmiotu oraz liczbę ocen bardzo dobrych wystawionych studentkom w roku 2013 z tego  przedmiotu.
+-- Wynik uporządkować malejąco według liczby ocen.
+
+USE ABDUczelnia;
+
+SELECT
+  P.Nazwa,
+  COUNT(*)
+FROM Przedmioty AS P
+  JOIN Oceny O ON P.IdPrzedmiotu = O.IdPrzedmiotu
+  JOIN Studenci S ON O.IdStudenta = S.IdStudenta
+WHERE O.Ocena = 5
+      AND S.CzyKobieta = 1
+      AND YEAR(DataOceny) = 2013
+GROUP BY P.Nazwa
+ORDER BY COUNT(*) DESC
+
+
+-- Zadanie 3 -  Zadanie wagi lekkiej.
+-- W bazie danych ABDPrzychodnia przygotować zestawienie zawierające następujące dane:
+-- nazwisko, imię i numer Pesel, datę urodzenia  pacjenta oraz  ilość wizyt w lekarza
+-- rodzinnego w I półroczu 2013. W wyniku uwzględniamy tylko tych pacjentów, którzy byli
+-- w podanym okresie na więcej niż 3 wizytach. Wynik uporządkować według liczby wizyt, a
+-- w obrębie tej samej liczby wizyt uporządkować alfabetycznie według nazwiska.
+
+USE ABDPrzychodnia;
+
+SELECT
+  P.Nazwisko,
+  P.Imie,
+  P.Pesel,
+  P.DataUrodzenia,
+  COUNT(*) Wizyty
+FROM
+  Pacjenci AS P
+  JOIN Wizyty W ON P.IdPacjenta = W.IdPacjenta
+  JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
+  JOIN Specjalizacje S ON L.Idspecjalizacji = S.idspecjalizacji
+WHERE
+  S.NazwaSpecjalizacji = 'Lekarz rodzinny' AND
+  YEAR(W.DataWizyty) = 2013 AND
+  MONTH(W.DataWizyty) <= 6
+GROUP BY
+  P.Nazwisko,
+  P.Imie,
+  P.Pesel,
+  P.DataUrodzenia
+HAVING COUNT(*) > 3
+ORDER BY COUNT(*), P.Nazwisko
+
+
+-- Spotkanie 4 -  Zadanie wago lekko-średniej.
+-- W bazie danych ABDPrzychodnia napisać zapytanie, które zwróci dane pacjentów (nazwisko,
+-- imię, pesel i płeć), tych pacjentów, którzy w maju 2014 byli na wizytach u przynajmniej
+-- dwóch lekarzy różnych specjalizacji
+
+
+USE ABDPrzychodnia;
+
+SELECT
+  P.Nazwisko,
+  P.Imie,
+  P.Pesel,
+  IIF(P.CzyKobieta = 1, 'K', 'M') Plec
+FROM Pacjenci P
+  JOIN Wizyty W ON P.IdPacjenta = W.IdPacjenta
+  JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
+  JOIN Specjalizacje S ON L.Idspecjalizacji = S.idspecjalizacji
+WHERE
+  YEAR(W.DataWizyty) = 2014 AND
+  MONTH(W.DataWizyty) = 5
+GROUP BY
+  P.Nazwisko,
+  P.Imie,
+  P.Pesel,
+  IIF(P.CzyKobieta = 1, 'K', 'M')
+HAVING COUNT(DISTINCT S.NazwaSpecjalizacji) >= 2
+
+
+
+
+
+
+
