@@ -11,14 +11,20 @@ SELECT
   Imie,
   Pesel,
   COUNT(*) Wizyty
-FROM Pacjenci AS P
+FROM
+  Pacjenci AS P
   JOIN Wizyty W ON P.IdPacjenta = W.IdPacjenta
 WHERE
   YEAR(W.DataWizyty) = 2013 AND
   MONTH(W.DataWizyty) >= 7
-GROUP BY Nazwisko, Imie, Pesel
-HAVING COUNT(*) >= 5
-ORDER BY COUNT(*) DESC
+GROUP BY
+  Nazwisko,
+  Imie,
+  Pesel
+HAVING
+  COUNT(*) >= 5
+ORDER BY
+  COUNT(*) DESC
 
 
 -- Zadanie 2 – Zadanie wagi lekkiej
@@ -30,15 +36,19 @@ USE ABDUczelnia;
 
 SELECT
   P.Nazwa,
-  COUNT(*)
-FROM Przedmioty AS P
+  COUNT(*) Ocen
+FROM
+  Przedmioty AS P
   JOIN Oceny O ON P.IdPrzedmiotu = O.IdPrzedmiotu
   JOIN Studenci S ON O.IdStudenta = S.IdStudenta
-WHERE O.Ocena = 5
-      AND S.CzyKobieta = 1
-      AND YEAR(DataOceny) = 2013
-GROUP BY P.Nazwa
-ORDER BY COUNT(*) DESC
+WHERE
+  O.Ocena = 5
+  AND S.CzyKobieta = 1
+  AND YEAR(DataOceny) = 2013
+GROUP BY
+  P.Nazwa
+ORDER BY
+  COUNT(*) DESC
 
 
 -- Zadanie 3 -  Zadanie wagi lekkiej.
@@ -70,8 +80,10 @@ GROUP BY
   P.Imie,
   P.Pesel,
   P.DataUrodzenia
-HAVING COUNT(*) > 3
-ORDER BY COUNT(*), P.Nazwisko
+HAVING
+  COUNT(*) > 3
+ORDER BY
+  COUNT(*), P.Nazwisko
 
 
 -- Spotkanie 4 -  Zadanie wago lekko-średniej.
@@ -87,7 +99,8 @@ SELECT
   P.Imie,
   P.Pesel,
   IIF(P.CzyKobieta = 1, 'K', 'M') Plec
-FROM Pacjenci P
+FROM
+  Pacjenci P
   JOIN Wizyty W ON P.IdPacjenta = W.IdPacjenta
   JOIN Lekarze L ON W.IdLekarza = L.IdLekarza
   JOIN Specjalizacje S ON L.Idspecjalizacji = S.idspecjalizacji
@@ -99,11 +112,5 @@ GROUP BY
   P.Imie,
   P.Pesel,
   IIF(P.CzyKobieta = 1, 'K', 'M')
-HAVING COUNT(DISTINCT S.NazwaSpecjalizacji) >= 2
-
-
-
-
-
-
-
+HAVING
+  COUNT(DISTINCT S.NazwaSpecjalizacji) >= 2
